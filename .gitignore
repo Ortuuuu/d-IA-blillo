@@ -1,0 +1,30 @@
+# Ignorar el entorno virtual
+.venv/
+venv/
+
+# Ignorar archivos de Python compilados
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignorar configuraciones de entorno
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+*.secret
+
+# Ignorar logs y caché
+*.log
+*.cache/
+*.pytest_cache/
+
+# Ignorar configuraciones de VS Code
+.vscode/
+*.code-workspace
+
+# Ignorar archivos de sistema de Windows/macOS/Linux
+.DS_Store
+Thumbs.db
