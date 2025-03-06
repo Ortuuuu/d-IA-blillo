@@ -18,7 +18,6 @@ __pycache__/
 
 # No ignorar la carpeta logs, pero sí ignorar logs y caché
 !logs/
-logs/*
 *.log
 *.cache/
 *.pytest_cache/
