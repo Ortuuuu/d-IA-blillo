@@ -16,7 +16,9 @@ __pycache__/
 .env.test
 *.secret
 
-# Ignorar logs y caché
+# No ignorar la carpeta logs, pero sí ignorar logs y caché
+!logs/
+logs/*
 *.log
 *.cache/
 *.pytest_cache/
