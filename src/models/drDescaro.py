@@ -10,7 +10,7 @@ class drtest:
 '''
 
 def drDescaro(consulta_psiquiatrica, historial):
-    print(f"Al habla el dr.Descaro, respondiendo a {consulta_psiquiatrica}:")
+    print(f"Dr.Descaro solucionando tus traumas:")
 
     messages = [
         {"role": "system", "content": config.template_drDescaro},

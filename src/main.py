@@ -79,8 +79,10 @@ def main():
     # Entrada del usuario
     user_req = st.chat_input("Escribe tu consulta:")
     if user_req:
-        # Agregar mensaje del usuario al estado
+        # Agregar mensaje del usuario al estado sl
         st.session_state.messages.append({"role": "user", "content": user_req, 'avatar': avatar_usuario})
+         # Agregar mensaje del usuario al estado historial
+        st.session_state.historial.append({"role": "user", "content": user_req})
         with st.chat_message("user", avatar=avatar_usuario):
             st.markdown(user_req,)
 
@@ -105,6 +107,7 @@ def main():
             with st.chat_message("assistant", avatar = avatar_asistente):
                 st.markdown(response)
             st.session_state.messages.append({"role": "assistant", "content": response, 'avatar': avatar_asistente})
+            st.session_state.historial.append({"role": "assistant", "content": response})
         else:
             # Extraer el nombre del agente seleccionado
             selected_agent = response.choices[0].message.content.strip()
@@ -121,11 +124,13 @@ def main():
                     with st.chat_message("assistant", avatar = avatar_asistente):
                         st.markdown(result)
                     st.session_state.messages.append({"role": "assistant", "content": result, 'avatar': avatar_asistente})
+                    st.session_state.historial.append({"role": "assistant", "content": result})
                 else:
                     # Mostrar respuesta del bot
                     with st.chat_message("assistant", avatar = avatar_asistente):
                         st.markdown(result)
                     st.session_state.messages.append({"role": "assistant", "content": result, 'avatar': avatar_asistente})
+                    st.session_state.historial.append({"role": "assistant", "content": result})
             else:
                 st.write("No se reconoció el agente seleccionado. Intenta de nuevo.")
 

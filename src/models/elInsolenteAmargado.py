@@ -5,7 +5,7 @@ import config
 
 
 def elInsolenteAmargado(consulta_estandar, historial):
-    print(f"Al habla el insolente Amargado, estoy aquí para servirle (porque no me queda otra)")
+    print(f"Al habla el insolente Amargado, estoy aquí para servirle (porque no me queda otra...)")
 
     messages = [
         {"role": "system", "content": config.template_insolenteAmargado},
