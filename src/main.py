@@ -91,10 +91,20 @@ def main():
                 st.markdown(user_req,)
 
             historial = st.session_state.historial[-25:]
+
+            # Intentamos obtener contexto útil de la BD. 
+            # Se asume que la colección "users_docs" ya existe o fue creada al ingestar PDFs previamente.
+            context_docs = config.utils.get_context_from_db(user_req, config.collection, similarity_threshold=0.8, k=8)
+            if context_docs:
+                context_str = "\n".join(context_docs)
+                prompt = f"Utiliza el siguiente contexto para responder:\n{context_str}\n\nPregunta: {user_req}"
+            else:
+                prompt = user_req
+
             # Enviar la consulta y el prompt del orquestador al modelo
             messages = [
                 {"role": "system", "content": config.main_template},
-                {"role": "user", "content": user_req}
+                {"role": "user", "content": prompt}
             ]
 
             try:
@@ -119,7 +129,7 @@ def main():
                 # Verificar si el nombre corresponde a un agente definido
                 if selected_agent in AGENTES:
                     # Llamar a la función del agente seleccionado, pasando la consulta original
-                    result = AGENTES[selected_agent](user_req, historial)
+                    result = AGENTES[selected_agent](prompt, historial)
 
                     # Si salta el filtro en la respuesta y, por lo tanto, al cliente le viene como respuesta el objeto None, se controla dicha situación:
                     if result == None:

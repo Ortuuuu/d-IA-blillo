@@ -106,3 +106,17 @@ def ingest_document(file, collection):
     success = True
 
     return success
+
+def get_context_from_db(user_req, collection, similarity_threshold=0.8, k=8):
+    results = collection.query(
+        query_texts=[user_req],
+        n_results=k,
+        include=["documents", "distances"]
+    )
+    context_docs = []
+    if results and "distances" in results and results["distances"]:
+        for doc, dist in zip(results["documents"][0], results["distances"][0]):
+            similarity = 1 - dist  # para cosine: 1 - distancia
+            if similarity >= similarity_threshold:
+                context_docs.append(doc)
+    return context_docs
