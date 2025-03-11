@@ -1,12 +1,10 @@
 import os
 import utils
-import streamlit as st
 import chromadb
 import chromadb.utils.embedding_functions as embedding_functions
 
 from openai import AzureOpenAI
 from dotenv import load_dotenv
-from langchain_openai.embeddings import OpenAIEmbeddings
 
 # dotenv
 load_dotenv()
@@ -15,6 +13,11 @@ MODELO_EMBEDDING = os.getenv("MODELO_EMBEDDING")
 ENDPOINT = os.getenv("ENDPOINT")
 KEY = os.getenv("KEY")
 VERSION = os.getenv("VERSION")
+
+# Configuración para JWT
+SECRET_KEY = "MI_CLAVE_OwO:)"
+ALGORITHM = "HS256"
+TOKEN_EXPIRY_MINUTES = 2
 
 # cliente llm
 client = AzureOpenAI(

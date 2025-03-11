@@ -14,6 +14,15 @@ AGENTES = {
 }
 
 def main():
+    # Al iniciar la sesión, creamos el token si no existe
+    if "token" not in st.session_state:
+        config.utils.reset_token(config.TOKEN_EXPIRY_MINUTES, config.SECRET_KEY, config.ALGORITHM)
+
+    # Si la sesión ha expirado, se le indica al usuario que debe refrescar
+    if config.utils.session_expired(config.TOKEN_EXPIRY_MINUTES):
+        st.error("Tu sesión ha expirado. Por favor, refresca la página para continuar.")
+        return
+    
     # Configuración de la app
     st.set_page_config(page_title="d(IA)blillo", page_icon="😈")
     st.title("😈d(IA)blillo😈")
@@ -82,6 +91,11 @@ def main():
 
     #Si se inserta una consulta:
     if user_req:
+        # Antes de procesar, comprobamos si la sesión ha expirado
+        if config.utils.session_expired(config.TOKEN_EXPIRY_MINUTES):
+            st.error("Tu sesión ha expirado. Por favor, refresca la página para continuar.")
+            return
+        
         with st.spinner("Pensando...🤓🤓", show_time=True):
             # Agregar mensaje del usuario al estado sl
             st.session_state.messages.append({"role": "user", "content": user_req, 'avatar': avatar_usuario})
@@ -148,8 +162,15 @@ def main():
                 else:
                     st.write("No se reconoció el agente seleccionado. Intenta de nuevo.")
                     print("ORQUESTADOR FALLANDO!!!!!!!")
+            # Tras una interacción exitosa, reseteamos el token para mantener la sesión viva
+            config.utils.reset_token(config.TOKEN_EXPIRY_MINUTES, config.SECRET_KEY, config.ALGORITHM)
     # Si se inserta un PDF:
     elif uploaded_file is not None:
+        # Antes de procesar, comprobamos si la sesión ha expirado
+        if config.utils.session_expired(config.TOKEN_EXPIRY_MINUTES):
+            st.error("Tu sesión ha expirado. Por favor, refresca la página para continuar.")
+            return
+        
         with st.spinner("Procesando documento... 🤖🤖", show_time=True):
             # Validamos que el archivo sea un PDF
             if not uploaded_file.name.lower().endswith('.pdf'):
@@ -161,6 +182,8 @@ def main():
             else:
                 st.error("No ha sido posible procesar el documento.")
 
+            # Tras una interacción exitosa, reseteamos el token para mantener la sesión viva
+            config.utils.reset_token(config.TOKEN_EXPIRY_MINUTES, config.SECRET_KEY, config.ALGORITHM)
 
 if __name__ == "__main__":
     main()

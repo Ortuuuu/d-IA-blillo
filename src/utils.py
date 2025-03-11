@@ -2,13 +2,12 @@ import json
 import re
 import uuid
 import PyPDF2
-import chromadb
+import jwt
+import datetime
+import streamlit as st
 
 from io import BytesIO
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-
-
-
 
 def obtener_contexto_callejero(region='españa'):
     """
@@ -120,3 +119,19 @@ def get_context_from_db(user_req, collection, similarity_threshold=0.8, k=8):
             if similarity >= similarity_threshold:
                 context_docs.append(doc)
     return context_docs
+
+def create_token(TOKEN_EXPIRY_MINUTES, SECRET_KEY, ALGORITHM):
+    exp = datetime.datetime.utcnow() + datetime.timedelta(minutes=TOKEN_EXPIRY_MINUTES)
+    payload = {"exp": exp, "iat": datetime.datetime.utcnow()}
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return token
+
+def reset_token(TOKEN_EXPIRY_MINUTES, SECRET_KEY, ALGORITHM):
+    st.session_state.token = create_token(TOKEN_EXPIRY_MINUTES, SECRET_KEY, ALGORITHM)
+    st.session_state.last_interaction = datetime.datetime.utcnow()
+
+def session_expired(TOKEN_EXPIRY_MINUTES):
+    if "last_interaction" not in st.session_state:
+        return False
+    now = datetime.datetime.utcnow()
+    return (now - st.session_state.last_interaction).total_seconds() > TOKEN_EXPIRY_MINUTES * 60
