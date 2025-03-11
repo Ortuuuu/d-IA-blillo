@@ -82,7 +82,7 @@ def main():
 
     #Si se inserta una consulta:
     if user_req:
-        with st.spinner("Pensando...🤓🤓", show_time=False):
+        with st.spinner("Pensando...🤓🤓", show_time=True):
             # Agregar mensaje del usuario al estado sl
             st.session_state.messages.append({"role": "user", "content": user_req, 'avatar': avatar_usuario})
             # Agregar mensaje del usuario al estado historial
@@ -137,21 +137,19 @@ def main():
                         st.session_state.historial.append({"role": "assistant", "content": result})
                 else:
                     st.write("No se reconoció el agente seleccionado. Intenta de nuevo.")
+                    print("ORQUESTADOR FALLANDO!!!!!!!")
     # Si se inserta un PDF:
     elif uploaded_file is not None:
-        with st.spinner("Procesando documento... 🤖🤖", show_time=False):
+        with st.spinner("Procesando documento... 🤖🤖", show_time=True):
             # Validamos que el archivo sea un PDF
             if not uploaded_file.name.lower().endswith('.pdf'):
                 st.error("El formato del documento no está soportado!")
                 return
-
-            st.info(f"Cargando {uploaded_file.name}...")
-
-            collection = config.db_client.get_or_create_collection(name="users_docs", metadata={"hnsw:space": "cosine"}, embedding_function=config.embeddingModel)
-
-            config.utils.ingest_document(uploaded_file, config.embeddingModel, collection, config.DATA_DIR, config.db_client)
-
-        st.success("Documento ingresado correctamente en la base de datos vectorial (ChromaDB)!")
+            
+            if config.utils.ingest_document(uploaded_file, config.collection) == True:
+                st.success("Documento procesado correctamente.")
+            else:
+                st.error("No ha sido posible procesar el documento.")
 
 
 if __name__ == "__main__":

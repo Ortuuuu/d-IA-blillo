@@ -2,6 +2,7 @@ import os
 import utils
 import streamlit as st
 import chromadb
+import chromadb.utils.embedding_functions as embedding_functions
 
 from openai import AzureOpenAI
 from dotenv import load_dotenv
@@ -22,14 +23,22 @@ client = AzureOpenAI(
     api_version = VERSION
 )
 
-# cliente embeddings
-embeddingModel = OpenAIEmbeddings(openai_api_key=KEY)
+# cliente embeddings y colección a utilizar
+openai_ef = embedding_functions.OpenAIEmbeddingFunction(
+                api_key=KEY,
+                api_base=ENDPOINT,
+                api_type="azure",
+                api_version=VERSION,
+                model_name=MODELO_EMBEDDING
+            )
 
 # Calcula la ruta absoluta de la carpeta 'data'
 # 'config.py' y la carpeta 'data' están al mismo nivel dentro de 'src'
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 # cliente ddbb local
 db_client = chromadb.PersistentClient(path=DATA_DIR)
+# Colección de la ddbb a usar
+collection = db_client.get_or_create_collection(name="users_docs", metadata={"hnsw:space": "cosine"}, embedding_function=openai_ef)
 
 # Construye la ruta completa al archivo 'frases_graciosas.txt'
 FRASES_GRACIOSAS_PATH = os.path.join(DATA_DIR, "frases_graciosas.txt")

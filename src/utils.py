@@ -4,10 +4,8 @@ import uuid
 import PyPDF2
 import chromadb
 
-from langchain_chroma import Chroma
 from io import BytesIO
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from openai import AzureOpenAI
 
 
 
@@ -55,7 +53,10 @@ def generate_document_summary(text: str) -> str:
     # integrar un modelo de lenguaje para generar el resumen
     return "Resumen generado (placeholder)"
 
-def ingest_document(file, embedding_model, collection, persist_directory, client):
+def ingest_document(file, collection):
+    # Indicará si se ha conseguido ingestar correctamente el documento o no
+    success = False
+
     file_name = file.name
     file_bytes = file.getvalue()
     file_size = len(file_bytes)
@@ -74,7 +75,7 @@ def ingest_document(file, embedding_model, collection, persist_directory, client
     document_summary = generate_document_summary(full_text)
     
     # Configuramos el text splitter para hacer chunking
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=150, chunk_overlap=50)
 
     # Procesamos cada página: aplicamos chunking y generamos la metadata de cada fragmento
     chunks = []
@@ -93,26 +94,15 @@ def ingest_document(file, embedding_model, collection, persist_directory, client
                 "document_summary": document_summary
             }
             chunks.append({"text": chunk, "metadata": metadata})
-    
-    # Preparamos las listas de textos y metadatos
-    texts = [chunk["text"] for chunk in chunks]
-    metadatas = [chunk["metadata"] for chunk in chunks]
 
-    # Cargamos la base de datos vectorial existente de Chroma
-    vectorstore = Chroma(
-        persist_directory=persist_directory,
-        client = client,
-        collection_name = collection,
-        embedding_function = embedding_model
-    )
-    # vectorstore = Chroma(
-    #     persist_directory=persist_directory, 
-    #     embedding_function=embedding_model, 
-    #     collection_name=collection
-    # )
-    
-    # Insertamos los nuevos chunks y sus metadatos en la base de datos preexistente
-    vectorstore.add_texts(texts, metadatas=metadatas)
-    vectorstore.persist()  # Guardamos los cambios en disco
+    # Insertar los datos en la base de datos de Chroma en batchs maximos de 166, ya que de lo contrario chromaDB se quejará... 😡
+    batch_size = 166
+    for i in range(0, len(chunks), batch_size):
+        batch = chunks[i:i+batch_size]
+        texts_batch = [chunk["text"] for chunk in batch]
+        metadatas_batch = [chunk["metadata"] for chunk in batch]
+        ids_batch = [chunk["metadata"]["document_id"] for chunk in batch]
+        collection.add(documents=texts_batch, ids=ids_batch, metadatas=metadatas_batch)
+    success = True
 
-    return vectorstore
+    return success
